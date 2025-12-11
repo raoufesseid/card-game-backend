@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Online Card Game Control Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- ====== BASIC STYLING ====== -->
+  <style>
+    :root {
+      --bg: #050816;
+      --card: #0f172a;
+      --accent: #22c55e;
+      --accent-soft: rgba(34, 197, 94, 0.15);
+      --accent-danger: #ef4444;
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+      --border: #1f2937;
+      --radius: 14px;
+      --shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font);
+      background: radial-gradient(circle at top, #1e293b 0, #020617 55%, #000 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    h1 {
+      font-size: 2.1rem;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h1 span.logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      background: radial-gradient(circle, #22c55e, #16a34a);
+      color: #020617;
+      font-weight: 900;
+      font-size: 1.1rem;
+      box-shadow: var(--shadow);
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+
+    .subtitle strong {
+      color: var(--accent);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.96);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .card h2 {
+      font-size: 1.1rem;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card h2 span.badge {
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid rgba(34, 197, 94, 0.5);
+    }
+
+    .card p.small {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    input {
+      width: 100%;
+      margin-top: 4px;
+      padding: 7px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: var(--text-main);
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.3);
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .row > div {
+      flex: 1;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #020617;
+      box-shadow: 0 14px 30px rgba(34, 197, 94, 0.35);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+    }
+
+    button.secondary {
+      background: rgba(148, 163, 184, 0.15);
+      color: var(--text-main);
+      box-shadow: none;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 35px rgba(34, 197, 94, 0.4);
+    }
+
+    button.secondary:hover {
+      box-shadow: 0 12px 25px rgba(15, 23, 42, 0.8);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: default;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      border-radius: 999px;
+      padding: 3px 9px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .pill span.dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+
+    .state-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .state-item {
+      padding: 7px 10px;
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--border);
+      font-size: 0.8rem;
+    }
+
+    .state-label {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+    }
+
+    .state-value {
+      margin-top: 2px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .hand-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .card-chip {
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: radial-gradient(circle at top left, rgba(148, 163, 184, 0.35), rgba(15, 23, 42, 0.95));
+      font-size: 0.8rem;
+    }
+
+    .card-chip.played {
+      border-color: rgba(34, 197, 94, 0.7);
+      background: radial-gradient(circle at top left, rgba(34, 197, 94, 0.35), rgba(15, 23, 42, 0.95));
+    }
+
+    .log {
+      margin-top: 10px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: #020617;
+      border: 1px solid var(--border);
+      font-size: 0.75rem;
+      max-height: 220px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+
+    .log-line {
+      margin-bottom: 4px;
+    }
+
+    .log-line span.time {
+      color: var(--text-muted);
+      margin-right: 6px;
+    }
+
+    .log-line span.win {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .log-line span.error {
+      color: var(--accent-danger);
+      font-weight: 600;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .tag {
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: var(--text-muted);
+    }
+
+    .players-table {
+      width: 100%;
+      margin-top: 6px;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+
+    .players-table th,
+    .players-table td {
+      padding: 4px 6px;
+      border-bottom: 1px solid rgba(31, 41, 55, 0.7);
+    }
+
+    .players-table th {
+      text-align: left;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .players-table td.id {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .players-table td.score {
+      font-weight: 600;
+    }
+
+    .section-title {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 4px;
+      margin-bottom: 4px;
+    }
+
+    .two-cols {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    @media (max-width: 700px) {
+      .two-cols {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>
+      <span class="logo">CG</span>
+      Online Card Game – Admin Panel
+    </h1>
+    <p class="subtitle">
+      Developed by 
+      <strong style="color:#22c55e;">ABDULRAUF ABDULHAMID ALSAYD ALSIAD (220201954)</strong>
+      and 
+      <strong style="color:#22c55e;">OMAR ABDELSALAM MAHROUS ABDELMOTLEB (220201810)</strong>
+      as part of the Cloud Technologies course project.
+    </p>
+  </header>
+
+  <main class="layout">
+    <!-- LEFT SIDE: SETUP + ACTIONS -->
+    <section class="card">
+      <h2>
+        Game & Players
+        <span class="badge">Backend Control</span>
+      </h2>
+      <p class="small">
+        1) Create players → 2) Create a game → 3) Join game → 4) Get hand → 5) Play cards.
+      </p>
+
+      <!-- Create Players -->
+      <div class="section-title">Players</div>
+      <div class="row">
+        <div>
+          <label>New Player Name</label>
+          <input id="playerName" placeholder="e.g. ABDULRAUF" />
+          <button onclick="createPlayer()">
+            ➕ Create Player
+          </button>
+        </div>
+        <div>
+          <label>Last Created Player</label>
+          <div class="tag-list" id="lastPlayerTag"></div>
+          <p class="small" style="margin-top:6px;">
+            Player IDs are needed to join the game and play cards.
+          </p>
+        </div>
+      </div>
+
+      <table class="players-table" id="playersTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Total Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Filled dynamically -->
+        </tbody>
+      </table>
+
+      <hr style="border-color: rgba(31,41,55,0.9); margin: 14px 0;" />
+
+      <!-- Game creation -->
+      <div class="section-title">Game</div>
+      <div class="row">
+        <div>
+          <button onclick="createGame()">
+            🕹️ Create New Game
+          </button>
+          <p class="small">
+            Use this to start a fresh game session for 2 players.
+          </p>
+        </div>
+        <div>
+          <label>Current Game ID</label>
+          <input id="gameIdInput" placeholder="Will be filled automatically" />
+          <button class="secondary" onclick="refreshGameState()" id="refreshGameBtn" disabled>
+            🔄 Refresh State
+          </button>
+        </div>
+      </div>
+
+      <!-- Join game -->
+      <div class="section-title">Join Game</div>
+      <div class="two-cols">
+        <div>
+          <label>Player 1 ID</label>
+          <input id="joinP1" placeholder="e.g. 1" />
+          <button class="secondary" onclick="joinGameFor(1)">
+            ✅ Join as Player 1
+          </button>
+        </div>
+        <div>
+          <label>Player 2 ID</label>
+          <input id="joinP2" placeholder="e.g. 2" />
+          <button class="secondary" onclick="joinGameFor(2)">
+            ✅ Join as Player 2
+          </button>
+        </div>
+      </div>
+
+      <p class="small" style="margin-top:8px;">
+        Open this page on <strong>two machines</strong>, each one uses their own Player ID (P1 / P2) to join and play.
+      </p>
+
+    </section>
+
+    <!-- RIGHT SIDE: LIVE GAME + PLAYER PANELS + LOG -->
+    <section class="card">
+      <h2>
+        Live Game Status
+        <span class="badge" id="gameStatusBadge">No game</span>
+      </h2>
+
+      <!-- GAME META -->
+      <div class="state-grid">
+        <div class="state-item">
+          <div class="state-label">Game ID</div>
+          <div class="state-value" id="stateGameId">–</div>
+        </div>
+        <div class="state-item">
+          <div class="state-label">Status</div>
+          <div class="state-value" id="stateStatus">waiting</div>
+        </div>
+        <div class="state-item">
+          <div class="state-label">Current Round</div>
+          <div class="state-value" id="stateRound">–</div>
+        </div>
+        <div class="state-item">
+          <div class="state-label">Last Winner</div>
+          <div class="state-value" id="stateWinner">–</div>
+        </div>
+      </div>
+
+      <!-- PLAYER PANELS -->
+      <div class="two-cols" style="margin-top:14px;">
+        <!-- Player 1 -->
+        <div class="card" style="padding:10px 12px; background: rgba(15,23,42,0.9);">
+          <h3 style="font-size:0.9rem; display:flex; justify-content:space-between; align-items:center;">
+            Player 1
+            <span class="pill">
+              <span class="dot"></span>
+              <span id="p1IdLabel">ID: –</span>
+            </span>
+          </h3>
+          <label style="margin-top:6px;">Player 1 ID</label>
+          <input id="p1IdPlay" placeholder="same as join P1 ID" />
+          <div class="row">
+            <button class="secondary" onclick="loadHandFor(1)">🃏 Get Hand</button>
+            <button class="secondary" onclick="refreshGameState()">🏁 Scores</button>
+          </div>
+          <label style="margin-top:8px;">Current Hand</label>
+          <div class="hand-badges" id="p1Hand"></div>
+
+          <label style="margin-top:8px;">Play Card (e.g. QH, 10C, AS)</label>
+          <div class="row">
+            <input id="p1Card" placeholder="Card code" />
+            <button onclick="playCardFor(1)">▶ Play</button>
+          </div>
+        </div>
+
+        <!-- Player 2 -->
+        <div class="card" style="padding:10px 12px; background: rgba(15,23,42,0.9);">
+          <h3 style="font-size:0.9rem; display:flex; justify-content:space-between; align-items:center;">
+            Player 2
+            <span class="pill">
+              <span class="dot"></span>
+              <span id="p2IdLabel">ID: –</span>
+            </span>
+          </h3>
+          <label style="margin-top:6px;">Player 2 ID</label>
+          <input id="p2IdPlay" placeholder="same as join P2 ID" />
+          <div class="row">
+            <button class="secondary" onclick="loadHandFor(2)">🃏 Get Hand</button>
+            <button class="secondary" onclick="refreshGameState()">🏁 Scores</button>
+          </div>
+          <label style="margin-top:8px;">Current Hand</label>
+          <div class="hand-badges" id="p2Hand"></div>
+
+          <label style="margin-top:8px;">Play Card (e.g. QH, 10C, AS)</label>
+          <div class="row">
+            <input id="p2Card" placeholder="Card code" />
+            <button onclick="playCardFor(2)">▶ Play</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOG -->
+      <div class="section-title" style="margin-top:14px;">Event Log</div>
+      <div class="log" id="logBox">
+        <!-- log lines here -->
+      </div>
+
+    </section>
+  </main>
+
+  <!-- ====== JAVASCRIPT LOGIC ====== -->
+  <script>
+    let currentGameId = null;
+    let playersCache = [];
+    let lastWinner = null;
+
+    function log(message, type = "info") {
+      const box = document.getElementById("logBox");
+      const line = document.createElement("div");
+      line.className = "log-line";
+      const now = new Date();
+      const time = now.toLocaleTimeString();
+      const spanTime = document.createElement("span");
+      spanTime.className = "time";
+      spanTime.textContent = "[" + time + "]";
+      const spanMsg = document.createElement("span");
+      if (type === "error") spanMsg.className = "error";
+      if (type === "win") spanMsg.className = "win";
+      spanMsg.textContent = " " + message;
+      line.appendChild(spanTime);
+      line.appendChild(spanMsg);
+      box.appendChild(line);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function api(path, options = {}) {
+      const url = path; // same origin
+      const defaults = {
+        headers: { "Content-Type": "application/json" }
+      };
+      const config = Object.assign({}, defaults, options);
+      try {
+        const res = await fetch(url, config);
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          log("Error " + res.status + ": " + JSON.stringify(data), "error");
+          throw new Error(JSON.stringify(data));
+        }
+        return data;
+      } catch (err) {
+        log("Request failed: " + err.message, "error");
+        throw err;
+      }
+    }
+
+    function renderPlayersTable() {
+      const tbody = document.querySelector("#playersTable tbody");
+      tbody.innerHTML = "";
+      playersCache.forEach(p => {
+        const tr = document.createElement("tr");
+        const tdId = document.createElement("td");
+        tdId.textContent = p.id;
+        tdId.className = "id";
+        const tdName = document.createElement("td");
+        tdName.textContent = p.name;
+        const tdScore = document.createElement("td");
+        tdScore.textContent = p.score ?? 0;
+        tdScore.className = "score";
+        tr.appendChild(tdId);
+        tr.appendChild(tdName);
+        tr.appendChild(tdScore);
+        tbody.appendChild(tr);
+      });
+    }
+
+    function updateLastPlayerTag(player) {
+      const box = document.getElementById("lastPlayerTag");
+      box.innerHTML = "";
+      if (!player) return;
+      const tag = document.createElement("div");
+      tag.className = "tag";
+      tag.textContent = `ID ${player.player_id} – ${player.name}`;
+      box.appendChild(tag);
+      const p1 = document.getElementById("joinP1");
+      if (!p1.value) p1.value = player.player_id;
+    }
+
+    async function createPlayer() {
+      const nameInput = document.getElementById("playerName");
+      const name = nameInput.value.trim() || "Player";
+      try {
+        const data = await api("/players", {
+          method: "POST",
+          body: JSON.stringify({ name })
+        });
+        log(`Created player: ${data.name} (ID ${data.player_id})`);
+        playersCache.push({ id: data.player_id, name: data.name, score: 0 });
+        renderPlayersTable();
+        updateLastPlayerTag(data);
+        nameInput.value = "";
+      } catch (err) {}
+    }
+
+    async function createGame() {
+      try {
+        const data = await api("/games", { method: "POST" });
+        currentGameId = data.game_id;
+        document.getElementById("gameIdInput").value = currentGameId;
+        document.getElementById("stateGameId").textContent = currentGameId;
+        document.getElementById("stateRound").textContent = data.current_round;
+        document.getElementById("stateStatus").textContent = data.status;
+        document.getElementById("gameStatusBadge").textContent = "Game #" + currentGameId;
+        document.getElementById("refreshGameBtn").disabled = false;
+        log(`Created game with ID ${currentGameId}`);
+      } catch (err) {}
+    }
+
+    async function joinGameFor(slot) {
+      const gameId = currentGameId || parseInt(document.getElementById("gameIdInput").value, 10);
+      if (!gameId) {
+        log("Please create a game first.", "error");
+        return;
+      }
+      const inputId = slot === 1 ? document.getElementById("joinP1") : document.getElementById("joinP2");
+      const playerId = parseInt(inputId.value, 10);
+      if (!playerId) {
+        log(`Enter Player ${slot} ID first.`, "error");
+        return;
+      }
+      try {
+        await api(`/games/${gameId}/join`, {
+          method: "POST",
+          body: JSON.stringify({ player_id: playerId })
+        });
+        log(`Player ${playerId} joined game ${gameId} as slot ${slot}`);
+        if (slot === 1) {
+          document.getElementById("p1IdPlay").value = playerId;
+          document.getElementById("p1IdLabel").textContent = "ID: " + playerId;
+        } else {
+          document.getElementById("p2IdPlay").value = playerId;
+          document.getElementById("p2IdLabel").textContent = "ID: " + playerId;
+        }
+      } catch (err) {}
+    }
+
+    async function loadHandFor(slot) {
+      const gameId = currentGameId || parseInt(document.getElementById("gameIdInput").value, 10);
+      if (!gameId) {
+        log("No game ID found.", "error");
+        return;
+      }
+      const pidInput = slot === 1 ? document.getElementById("p1IdPlay") : document.getElementById("p2IdPlay");
+      const handBox = slot === 1 ? document.getElementById("p1Hand") : document.getElementById("p2Hand");
+      const playerId = parseInt(pidInput.value, 10);
+      if (!playerId) {
+        log(`Enter Player ${slot} ID in the panel.`, "error");
+        return;
+      }
+      try {
+        const data = await api(`/games/${gameId}/hand/${playerId}`);
+        handBox.innerHTML = "";
+        data.hand.forEach(c => {
+          const chip = document.createElement("div");
+          chip.className = "card-chip";
+          chip.textContent = c;
+          handBox.appendChild(chip);
+        });
+        log(`Loaded hand for Player ${playerId}: [${data.hand.join(", ")}]`);
+      } catch (err) {}
+    }
+
+    async function playCardFor(slot) {
+      const gameId = currentGameId || parseInt(document.getElementById("gameIdInput").value, 10);
+      if (!gameId) {
+        log("No game ID found.", "error");
+        return;
+      }
+      const pidInput = slot === 1 ? document.getElementById("p1IdPlay") : document.getElementById("p2IdPlay");
+      const cardInput = slot === 1 ? document.getElementById("p1Card") : document.getElementById("p2Card");
+      const handBox = slot === 1 ? document.getElementById("p1Hand") : document.getElementById("p2Hand");
+
+      const playerId = parseInt(pidInput.value, 10);
+      const cardCode = cardInput.value.trim().toUpperCase();
+      if (!playerId || !cardCode) {
+        log(`Player ${slot}: enter ID and card code.`, "error");
+        return;
+      }
+      try {
+        const res = await api(`/games/${gameId}/play`, {
+          method: "POST",
+          body: JSON.stringify({ player_id: playerId, card_code: cardCode })
+        });
+        log(`Player ${playerId} played ${cardCode}.`);
+        cardInput.value = "";
+
+        if (res.message && res.message.includes("waiting")) {
+          // فقط لعب كرت وينتظر الخصم
+          const chips = Array.from(handBox.children);
+          chips.forEach(ch => {
+            if (ch.textContent.trim().toUpperCase() === cardCode) {
+              ch.classList.add("played");
+              ch.style.opacity = "0.4";
+            }
+          });
+        } else {
+          // جولة اكتملت
+          if (typeof res.winner !== "undefined") {
+            if (res.winner === null) {
+              log("Round ended in a draw.", "win");
+              lastWinner = "Draw";
+            } else {
+              log(`Round winner: Player ${res.winner}`, "win");
+              lastWinner = "Player " + res.winner;
+            }
+            document.getElementById("stateWinner").textContent = lastWinner || "–";
+          }
+          if (res.round) {
+            document.getElementById("stateRound").textContent = res.round;
+          }
+          // حدّث حالة اللعبة (scores) وحمّل الأيادي من جديد
+          await refreshGameState();
+          await loadHandFor(1);
+          await loadHandFor(2);
+        }
+      } catch (err) {}
+    }
+
+    async function refreshGameState() {
+      const gameId = currentGameId || parseInt(document.getElementById("gameIdInput").value, 10);
+      if (!gameId) {
+        log("No game ID to refresh.", "error");
+        return;
+      }
+      try {
+        const data = await api(`/games/${gameId}`);
+        currentGameId = data.game_id;
+        document.getElementById("stateGameId").textContent = data.game_id;
+        document.getElementById("stateRound").textContent = data.current_round;
+        document.getElementById("stateStatus").textContent = data.status;
+        document.getElementById("gameStatusBadge").textContent = `Game #${data.game_id} • ${data.status}`;
+        // حدّث جدول اللاعبين بالنقاط
+        playersCache = playersCache.map(p => {
+          const fromGame = data.players.find(x => x.player_id === p.id);
+          return {
+            ...p,
+            score: fromGame ? fromGame.score : p.score
+          };
+        });
+        renderPlayersTable();
+        log(`Refreshed game state for Game ${data.game_id}`);
+      } catch (err) {}
+    }
+  </script>
+</body>
+</html>
