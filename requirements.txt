@@ -1,7 +1,4 @@
-Flask
-Flask_SQLAlchemy
-gunicorn
-Flask-SocketIO
-eventlet
+flask
+flask_sqlalchemy
 flask-socketio
 eventlet
