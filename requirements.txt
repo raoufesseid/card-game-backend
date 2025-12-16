@@ -1,4 +1,5 @@
 Flask
 Flask_SQLAlchemy
 gunicorn
-flask-cors
+Flask-SocketIO
+eventlet
